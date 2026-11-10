@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>물이 되어라</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="물이 되어라">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#f4efe4;
+  --ink-shadow:rgba(0,0,0,.55);
+  --curtain:#000;
+  --brush:"Nanum Brush Script","Nanum Pen Script","Apple SD Gothic Neo",serif;
+  color-scheme:dark;
+}
+body[data-ink="dark"]{--ink:#1b241f;--ink-shadow:rgba(255,255,255,.55)}
+html,body{margin:0;height:100%;background:#000;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hud{position:fixed;left:0;right:0;top:0;padding-top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;pointer-events:none;color:var(--ink);font-family:var(--brush);text-shadow:0 0 14px var(--ink-shadow)}
+#hud b{font-weight:400;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+#hud .u{font-size:34px;margin-left:2px}
+#hud .m{font-size:26px;opacity:.7;margin-left:6px}
+#snd{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:calc(env(safe-area-inset-right,0px) + 14px);width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.18);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+#snd:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+#snd svg{width:22px;height:22px}
+#grain{position:fixed;inset:-50%;pointer-events:none;opacity:.06;mix-blend-mode:overlay;animation:grain 1s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-6%,-2%)}80%{transform:translate(5%,4%)}100%{transform:translate(0,0)}}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 75% at 50% 48%,transparent 55%,rgba(0,0,0,.42) 100%)}
+#quote{position:fixed;left:0;right:0;bottom:0;padding:0 max(24px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 54px) max(24px,env(safe-area-inset-left,0px));text-align:center;pointer-events:none;color:var(--ink);font-family:var(--brush);font-size:clamp(27px,7.4vw,40px);line-height:1.25;text-shadow:0 0 16px var(--ink-shadow);text-wrap:balance;word-break:keep-all;opacity:0;transform:translateY(8px);transition:opacity .9s ease,transform .9s ease}
+#quote.on{opacity:1;transform:none}
+#curtain{position:fixed;inset:0;z-index:10;background:var(--curtain);color:#f4efe4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:0 max(28px,env(safe-area-inset-right,0px)) 0 max(28px,env(safe-area-inset-left,0px));text-align:center;font-family:var(--brush);opacity:1;transition:opacity 1.6s ease;pointer-events:none}
+#curtain.off{opacity:0}
+#curtain p{margin:0;opacity:0;transition:opacity 1.2s ease;word-break:keep-all;text-wrap:balance}
+#curtain.text p{opacity:1}
+#cStage{font-size:26px;letter-spacing:.2em;opacity:.6}
+#curtain.text #cStage{opacity:.6}
+#cLine{font-size:clamp(32px,8.6vw,48px);line-height:1.3}
+@media (prefers-reduced-motion:reduce){#grain{animation:none}#quote,#curtain,#curtain p{transition-duration:.01s}}
+/* 가로 화면 기준 배치 */
+#hud{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+#hud b{font-size:46px}
+#hud .u{font-size:26px}
+#hud .m{font-size:20px}
+#quote{max-width:72vw;margin:0 auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px);font-size:clamp(22px,6.6vh,34px)}
+#cLine{font-size:clamp(28px,8.5vh,46px)}
+#cStage{font-size:clamp(18px,5vh,26px)}
+/* 조작 버튼: 왼쪽 아래 이동, 오른쪽 아래 동작 */
+.ctl{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;gap:10px;z-index:5;transition:opacity 1.2s ease}
+#pad{left:calc(env(safe-area-inset-left,0px) + 14px);grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:2px}
+#pad .u{grid-area:1/2}#pad .l{grid-area:2/1}#pad .r{grid-area:2/3}#pad .d{grid-area:3/2}
+.ctl button{height:48px;border:1px solid rgba(244,239,228,.28);border-radius:24px;background:rgba(0,0,0,.28);color:var(--ink);font-family:var(--brush);font-size:23px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);touch-action:none;transition:background .15s ease,transform .15s ease}
+#pad button{width:46px;height:46px;border-radius:50%}
+.ctl button svg{width:24px;height:24px}
+/* 오른쪽 아래: 주먹·발차기를 게임패드처럼 비스듬히, 그 위 작은 버튼이 기술 판을 펼침 */
+#acts{right:calc(env(safe-area-inset-right,0px) + 16px);width:150px;height:150px;display:block}
+#acts .big{position:absolute;inset:0}
+#acts .big button{position:absolute;border-radius:50%}
+#acts [data-k="kick"]{right:0;bottom:0;width:70px;height:70px}
+#acts [data-k="punch"]{right:78px;bottom:26px;width:60px;height:60px}
+#acts .more{right:18px;bottom:84px;width:40px;height:40px;opacity:.85}
+#acts [data-k="kick"] svg{width:32px;height:32px}
+#acts [data-k="punch"] svg{width:28px;height:28px}
+#acts .more svg{width:18px;height:18px}
+#acts .more[aria-expanded="true"]{background:rgba(244,239,228,.22);border-color:rgba(244,239,228,.6)}
+/* 기술 판: 접혀 있다가 위로 펼쳐짐 */
+.tray{position:absolute;right:0;bottom:136px;display:grid;grid-template-columns:repeat(4,44px);gap:8px;padding:10px;border-radius:22px;background:rgba(10,10,10,.42);border:1px solid rgba(244,239,228,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transform-origin:90% 100%;transform:scale(.6) translateY(16px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.2,.8,.3,1.2),opacity .18s ease}
+.tray.open{transform:none;opacity:1;pointer-events:auto}
+.tray button{width:44px;height:44px;border-radius:50%}
+.tray svg{width:21px;height:21px}
+.ctl button.down{background:rgba(244,239,228,.22);transform:scale(.94)}
+.ctl button[aria-pressed="true"]{background:rgba(244,239,228,.2);border-color:rgba(244,239,228,.6)}
+.ctl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+#quote{max-width:56vw}
+/* 명상: 화면이 고요해짐 */
+#veil{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 65% at 50% 55%,transparent 30%,rgba(0,0,0,.7) 100%);opacity:calc(var(--charge,0) * .9);transition:opacity .2s linear}
+body.calm #veil{opacity:1;transition:opacity 2.4s ease}
+body.calm #hud,body.calm #quote{opacity:.18!important;transition:opacity 2.4s ease}
+#hud{transition:opacity 1.2s ease}
+/* 워크맨: 왼쪽 위. 켜지면 테이프가 돌고 곡 제목이 보임 */
+#walkman{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 14px);display:flex;align-items:center;gap:8px;padding:0;border:0;background:none;color:var(--ink);cursor:pointer;font-family:var(--brush);font-size:18px;z-index:5;opacity:.85}
+#walkman svg{width:56px;height:38px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+#walkman .reel{transition:none}
+#walkman.on .reel{animation:reel 1.4s linear infinite}
+@keyframes reel{to{transform:rotate(360deg)}}
+#walkman .song{max-width:34vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 10px var(--ink-shadow)}
+#walkman:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+/* 시작 화면: 카세트를 워크맨에 넣으면 시작 */
+#intro{position:fixed;inset:0;z-index:12;background:#050505;color:#f4efe4;font-family:var(--brush);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:opacity 1s ease;-webkit-tap-highlight-color:transparent}
+#intro.off{opacity:0;pointer-events:none}
+#intro p{margin:0;text-align:center}
+#intro .it{font-size:clamp(34px,10vh,56px);line-height:1}
+#intro .id{font-size:clamp(18px,5vh,26px);opacity:.6}
+#intro .ih{font-size:clamp(16px,4.6vh,22px);opacity:.55;animation:blink 2.4s ease-in-out infinite}
+#intro.in .ih{animation:none;opacity:0}
+@keyframes blink{50%{opacity:.15}}
+#intro .deck{position:relative;width:clamp(150px,36vh,200px);height:clamp(150px,36vh,200px);margin:6px 0}
+#intro .player{position:absolute;left:0;right:0;bottom:0;width:100%}
+#intro .tape{position:absolute;left:12%;width:76%;top:0;transform:translateY(-18%) rotate(-4deg);transition:transform .55s cubic-bezier(.5,0,.7,1),opacity .2s ease .5s;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+#intro.in .tape{transform:translateY(62%) rotate(0);opacity:0}
+#intro.play .reel{animation:reel 1.2s linear infinite}
+#rotate{position:fixed;inset:0;display:none;z-index:20;background:#000;color:#f4efe4;font-family:var(--brush);font-size:34px;align-items:center;justify-content:center;text-align:center;padding:0 24px}
+@media (orientation:portrait){#rotate{display:flex}}
+</style>
+</head>
+<body data-ink="light">
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="hud" aria-live="polite"><b id="dayN">1</b><span class="u">일째</span><span class="m" id="dayM">/ 108</span></div>
+<button id="snd" type="button" aria-label="소리 끄기"></button>
+<button id="walkman" class="ctl-top" type="button" aria-label="워크맨. 누르면 음악 재생, 길게 누르면 다음 곡" aria-pressed="false"></button>
+<div id="quote" aria-live="polite"></div>
+<div id="veil"></div>
+<div id="pad" class="ctl" role="group" aria-label="방향">
+  <button type="button" data-k="U" class="u" aria-label="위. 짧게 누르면 점프"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button>
+  <button type="button" data-k="L" class="l" aria-label="왼쪽으로 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button type="button" data-k="R" class="r" aria-label="오른쪽으로 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  <button type="button" data-k="D" class="d" aria-label="아래. 누르고 있으면 웅크림"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button>
+</div>
+<div id="acts" class="ctl" role="group" aria-label="동작">
+  <div id="tray" class="tray" role="group" aria-label="기술">
+    <button type="button" data-k="pushup" aria-label="팔굽혀펴기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="19" cy="9" r="1.8"/><path d="M17 10.5L5 14.5"/><path d="M14 11.5v5M8 13.5v3"/><path d="M5 14.5l-2 1.5"/><path d="M2 19h20"/></svg></button>
+    <button type="button" data-k="rope" aria-label="줄넘기" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="6" r="1.8"/><path d="M12 8.5v6M12 14.5l-2 4.5M12 14.5l2 4.5M12 10.5l-4 2M12 10.5l4 2"/><path d="M8 12.5C4 13 2 17 4 20.5c2 1.5 14 1.5 16 0 2-3.5 0-7.5-4-8"/></svg></button>
+    <button type="button" data-k="dance" aria-label="힙합 춤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M12.5 7l-1 6 3 3-1 4.5"/><path d="M11.5 13l-3.5 2-1.5 4"/><path d="M12.3 8.5l4.2-2.5 2 1.5M12 9.5L8 8 6 5"/></svg></button>
+    <button type="button" data-k="bat" aria-label="야구 타격"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="6" r="2.2"/><path d="M4 20l9-9"/><path d="M13 11l2.5-2.5"/><path d="M3 19.5l1.5 1.5"/></svg></button>
+    <button type="button" data-k="kiss" aria-label="키스 날리기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-9.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.5C19 15.6 12 20 12 20z"/></svg></button>
+    <button type="button" data-k="ammo" aria-label="탄창 찾기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20V9a2 2 0 0 1 4 0v11M13 20V9a2 2 0 0 1 4 0v11"/><path d="M5 20h14"/><path d="M7 12h4M13 12h4"/></svg></button>
+    <button type="button" data-k="headbutt" aria-label="박치기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="10" r="4"/><path d="M15 6l2-2M16 10h3M15 14l2 2"/><path d="M7 15l-1 5M11 15l1 5"/></svg></button>
+    <button type="button" data-k="guitar" aria-label="기타 연주" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 10l6-6M18 3l3 3"/><path d="M13.5 10.5a3 3 0 0 0-4.2-.3L5 14a3.5 3.5 0 0 0 5 5l3.8-4.3a3 3 0 0 0-.3-4.2z"/><circle cx="9.5" cy="14.5" r="1.2"/></svg></button>
+    <button type="button" data-k="qb" aria-label="쿼터백 패스"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="5" transform="rotate(-35 12 12)"/><path d="M10 11l4 2M11 9.5l1 .5M12 13l1 .5M13 11.5l1 .5"/></svg></button>
+    <button type="button" data-k="piano" aria-label="피아노 연주" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="1"/><path d="M7.5 6v12M12 6v12M16.5 6v12"/><path d="M6 6v6h3V6M10.5 6v6h3V6M15 6v6h3V6" fill="currentColor" stroke="none"/></svg></button>
+    <button type="button" data-k="pitch" aria-label="야구 투구"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M8 6.5c1.5 3 1.5 8 0 11M16 6.5c-1.5 3-1.5 8 0 11"/></svg></button>
+  </div>
+  <div class="row big">
+    <button type="button" id="more" class="more" aria-label="기술 펼치기" aria-expanded="false" aria-controls="tray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></button>
+    <button type="button" data-k="punch" aria-label="주먹. 오른쪽과 함께 8연타, 왼쪽과 함께 팔꿈치"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10.5h6.5a2 2 0 0 1 2 2V15a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M5 13h8.5M5 15.5h8.5"/><path d="M17 8.5l2.5-2M17.5 12.5H21M17 16.5l2.5 2"/></svg></button>
+    <button type="button" data-k="kick" aria-label="발차기. 오른쪽과 함께 날아 옆차기, 왼쪽과 함께 뒤돌려차기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><path d="M7 8l2 5"/><path d="M9 13l-3 7"/><path d="M9 13l11-2"/><path d="M8 9.5l-4 2M8 9.5l4-1"/></svg></button>
+  </div>
+</div>
+<div id="intro" role="button" tabindex="0" aria-label="테이프를 넣고 시작하기">
+  <p class="it">물이 되어라</p>
+  <p class="id" id="introDay"></p>
+  <div class="deck">
+    <svg class="tape" viewBox="0 0 120 76" aria-hidden="true">
+      <rect x="2" y="2" width="116" height="72" rx="6" fill="#e9e2d0" stroke="#3a3328" stroke-width="2"/>
+      <rect x="12" y="10" width="96" height="22" rx="2" fill="#e08a2c"/>
+      <text x="60" y="25" text-anchor="middle" font-size="10" font-family="sans-serif" fill="#3a3328" font-weight="700">AWESOME MIX VOL.1</text>
+      <rect x="26" y="38" width="68" height="22" rx="10" fill="#3a3328"/>
+      <circle cx="42" cy="49" r="7" fill="#e9e2d0"/><circle cx="78" cy="49" r="7" fill="#e9e2d0"/>
+    </svg>
+    <svg class="player" viewBox="0 0 160 110" aria-hidden="true">
+      <rect x="3" y="3" width="154" height="104" rx="10" fill="#2b4a6b" stroke="#c8d3dd" stroke-width="3"/>
+      <rect x="18" y="16" width="100" height="56" rx="6" fill="#0d1620" stroke="#8fa3b5" stroke-width="2"/>
+      <g class="reel" style="transform-origin:46px 44px"><circle cx="46" cy="44" r="13" fill="#e9e2d0"/><path d="M46 31v26M33 44h26" stroke="#5a4a32" stroke-width="3"/></g>
+      <g class="reel" style="transform-origin:90px 44px"><circle cx="90" cy="44" r="13" fill="#e9e2d0"/><path d="M90 31v26M77 44h26" stroke="#5a4a32" stroke-width="3"/></g>
+      <rect x="128" y="16" width="18" height="12" rx="2" fill="#e08a2c"/><rect x="128" y="34" width="18" height="12" rx="2" fill="#c8d3dd"/><rect x="128" y="52" width="18" height="12" rx="2" fill="#c8d3dd"/>
+      <text x="18" y="94" font-size="12" font-family="sans-serif" fill="#c8d3dd" font-weight="700">WALKMAN</text>
+    </svg>
+  </div>
+  <p class="ih">눌러서 테이프 넣기</p>
+</div>
+<div id="curtain"><p id="cStage"></p><p id="cLine"></p></div>
+<div id="rotate">휴대폰을 가로로 돌려 주세요</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

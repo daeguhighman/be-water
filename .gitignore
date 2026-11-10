@@ -1,0 +1,15 @@
+# 게임에 쓰는 파일만 올림. 음악(상업 음원)과 원본·작업 파일은 올리지 않음
+.DS_Store
+.claude/
+assets/music/
+assets/src/
+assets/bg-test/
+assets/*.fbx
+assets/*.hdr
+assets/*.jpg
+assets/fighter-bryce.glb
+index.v1.html
+candidates.html
+bg-preview.jpg
+bg-prompts.md
+tools/
