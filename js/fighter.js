@@ -26,7 +26,7 @@ export async function makeFighter(scene, { onLand, onPunch, onHit, onWhoosh }) {
 /* ---------- Mixamo ---------- */
 // assets/fighter.glb: tools/build-fighter.html로 만든 파일.
 // 동작: idle, kick, step_f, step_b, jab_head, fly_kick, spin_kick, combo8, elbow, pushup, rope, dance_*,
-//       armada, martelo, jump, crouch, bat, uppercut, body, kiss, ammo, headbutt, guitar, qb, piano, pitch
+//       armada, martelo, jump, crouch, bat, uppercut, body, guitar, qb, pitch
 async function loadCharacter() {
   try {
     const gltf = await new GLTFLoader().loadAsync("assets/fighter.glb");
@@ -171,11 +171,10 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
     martelo: { ends: "feet", approach: false, power: 1.2 },  // 바닥을 짚고 돌며 차기
     uppercut: { ends: "hands", approach: true, power: 1.6 },  // 올려치기
     body: { ends: "hands", approach: true, power: 0.9 },      // 몸통 잇따라 치기
-    headbutt: { ends: "head", approach: true, power: 1.5 },   // 박치기
     bat: { ends: "hands", approach: true, power: 2.2, swing: true, extend: 0.8 }, // 빈손 야구 타격. 보이지 않는 방망이 끝(0.8m)이 맞음
   };
   /** 치지 않는 재주: 한 번 하고 서 있는 자세로 돌아옴 */
-  const TRICKS = { jump: act("jump", true), kiss: act("kiss", true), ammo: act("ammo", true), qb: act("qb", true), pitch: act("pitch", true) };
+  const TRICKS = { jump: act("jump", true), qb: act("qb", true), pitch: act("pitch", true) };
   const crouch = act("crouch");
   for (const [name, sk] of Object.entries(STRIKES)) {
     sk.action = act(name, true);
@@ -244,7 +243,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
   }
 
   /** 팔굽혀펴기(누를 때마다 한 번)와 줄넘기(누르면 시작, 다시 누르면 멈춤) */
-  const pushup = act("pushup", true), rope = act("rope"), guitar = act("guitar"), piano = act("piano");
+  const pushup = act("pushup", true), rope = act("rope"), guitar = act("guitar");
   // 힙합 춤: 누를 때마다 넷 중 하나를 골라 춤
   const dances = list.filter((c) => c.name.startsWith("dance_")).map((c) => act(c.name));
   // 줄넘기: 엉덩이가 가장 높은 순간(줄이 발밑을 지나는 때)을 찾아 줄을 돌리는 박자로 씀
@@ -343,11 +342,9 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
       if (dir.x < 0 && startStrike("elbow")) return "combo";
       return this.chargeStart() ? "inch" : null;
     },
-    /** 박치기 */
-    headbutt() { return free() && startStrike("headbutt"); },
     /** 빈손으로 야구 방망이를 휘두름 */
     bat() { return free() && startStrike("bat"); },
-    /** jump(점프), kiss(키스 날리기), ammo(주머니를 뒤져 탄창 찾기), qb(쿼터백 패스), pitch(야구 투구) */
+    /** jump(점프), qb(쿼터백 패스), pitch(야구 투구) */
     trick(name) {
       const x = TRICKS[name]; if (!x || !free()) return false;
       mode = "trick"; go(x, 0.15); return true;
@@ -364,7 +361,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
       if (dir && mode === "idle") startStep();
       if (dir && mode === "crouch") startStep();
     },
-    /** sit(명상), pushup(팔굽혀펴기), rope(줄넘기), dance(힙합 춤), guitar(허공 기타), piano(허공 피아노). 같은 버튼을 다시 누르면 멈춤. 켜졌으면 true */
+    /** sit(명상), pushup(팔굽혀펴기), rope(줄넘기), dance(힙합 춤), guitar(허공 기타). 같은 버튼을 다시 누르면 멈춤. 켜졌으면 true */
     action(name) {
       if (name === "sit") {
         if (mode === "sit") { toIdle(1.0); return false; }
@@ -379,11 +376,6 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
       if (name === "dance" && dances.length) {
         if (mode === "dance") { toIdle(0.5); return false; }
         if (free()) { mode = "dance"; go(dances[Math.floor(Math.random() * dances.length)], 0.4); return true; }
-        return false;
-      }
-      if (name === "piano" && piano) {
-        if (mode === "piano") { toIdle(0.5); return false; }
-        if (free()) { mode = "piano"; go(piano, 0.4); return true; }
         return false;
       }
       if (name === "guitar" && guitar) {

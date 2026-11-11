@@ -663,8 +663,7 @@ function press(kind) {
     if (fighter.punch(dirHeld()) === "inch") { sfx.chargeStart(); setTimeout(() => { sfx.chargeStop(); fighter.chargeRelease(); }, 520); }
   }
   else if (kind === "bat") fighter.bat();
-  else if (kind === "headbutt") fighter.headbutt();
-  else if (kind === "kiss" || kind === "ammo" || kind === "qb" || kind === "pitch") fighter.trick(kind);
+  else if (kind === "qb" || kind === "pitch") fighter.trick(kind);
   else fighter.action(kind);
   paintButtons();
 }
@@ -675,12 +674,6 @@ function release(kind) {
   if (kind === "U") { held.delete("U"); if (!usedUp) fighter.trick("jump"); }
   if (kind === "D") { held.delete("D"); fighter.crouch(false); }
 }
-// 기술 판: 오른쪽 아래 작은 버튼으로 펼치고, 하나 고르면 접힘
-const tray = document.getElementById("tray"), moreBtn = document.getElementById("more");
-function setTray(open) { tray.classList.toggle("open", open); moreBtn.setAttribute("aria-expanded", open ? "true" : "false"); }
-moreBtn.addEventListener("click", (e) => { e.stopPropagation(); setTray(!tray.classList.contains("open")); });
-tray.addEventListener("pointerup", (e) => { if (e.target.closest("button")) setTimeout(() => setTray(false), 120); });
-
 for (const b of document.querySelectorAll(".ctl button[data-k]")) {
   const kind = b.dataset.k;
   b.addEventListener("pointerdown", (e) => {
@@ -693,14 +686,14 @@ for (const b of document.querySelectorAll(".ctl button[data-k]")) {
   b.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 // 컴퓨터에서 확인할 때 쓰는 키
-const KEYS = { ArrowLeft: "L", ArrowRight: "R", ArrowUp: "U", ArrowDown: "D", Space: "kick", KeyF: "punch", KeyU: "pushup", KeyJ: "rope", KeyD: "dance", KeyB: "bat", KeyK: "kiss", KeyA: "ammo", KeyH: "headbutt", KeyG: "guitar", KeyQ: "qb", KeyO: "piano", KeyT: "pitch" };
+const KEYS = { ArrowLeft: "L", ArrowRight: "R", ArrowUp: "U", ArrowDown: "D", Space: "kick", KeyF: "punch", KeyU: "pushup", KeyJ: "rope", KeyD: "dance", KeyB: "bat", KeyG: "guitar", KeyQ: "qb", KeyT: "pitch" };
 window.addEventListener("keydown", (e) => {
   if (e.repeat || !KEYS[e.code]) return;
   e.preventDefault(); press(KEYS[e.code]);
 });
 window.addEventListener("keyup", (e) => { if (KEYS[e.code]) release(KEYS[e.code]); });
 
-const toggles = ["rope", "dance", "guitar", "piano"].map((k) => [k, document.querySelector(`[data-k="${k}"]`)]);
+const toggles = ["rope", "dance", "guitar"].map((k) => [k, document.querySelector(`[data-k="${k}"]`)]);
 function paintButtons() {
   if (!fighter) return;
   for (const [k, b] of toggles) if (b) b.setAttribute("aria-pressed", fighter.mode === k ? "true" : "false");
