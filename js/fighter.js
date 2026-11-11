@@ -26,7 +26,7 @@ export async function makeFighter(scene, { onLand, onPunch, onHit, onWhoosh }) {
 /* ---------- Mixamo ---------- */
 // assets/fighter.glb: tools/build-fighter.html로 만든 파일.
 // 동작: idle, kick, step_f, step_b, jab_head, fly_kick, spin_kick, combo8, elbow, pushup, rope, dance_*,
-//       armada, martelo, jump, crouch, bat, uppercut, body, guitar, qb, pitch
+//       armada, martelo, jump, crouch, bat, uppercut, body, guitar, qb, pitch, breakdance
 async function loadCharacter() {
   try {
     const gltf = await new GLTFLoader().loadAsync("assets/fighter.glb");
@@ -174,7 +174,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
     bat: { ends: "hands", approach: true, power: 2.2, swing: true, extend: 0.8 }, // 빈손 야구 타격. 보이지 않는 방망이 끝(0.8m)이 맞음
   };
   /** 치지 않는 재주: 한 번 하고 서 있는 자세로 돌아옴 */
-  const TRICKS = { jump: act("jump", true), qb: act("qb", true), pitch: act("pitch", true) };
+  const TRICKS = { jump: act("jump", true), qb: act("qb", true), pitch: act("pitch", true), freeze: act("breakdance", true) };
   const crouch = act("crouch");
   for (const [name, sk] of Object.entries(STRIKES)) {
     sk.action = act(name, true);
@@ -344,7 +344,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
     },
     /** 빈손으로 야구 방망이를 휘두름 */
     bat() { return free() && startStrike("bat"); },
-    /** jump(점프), qb(쿼터백 패스), pitch(야구 투구) */
+    /** jump(점프), qb(쿼터백 패스), pitch(야구 투구), freeze(브레이크댄스 한 손 물구나무) */
     trick(name) {
       const x = TRICKS[name]; if (!x || !free()) return false;
       mode = "trick"; go(x, 0.15); return true;
