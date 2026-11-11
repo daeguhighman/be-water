@@ -663,7 +663,7 @@ function press(kind) {
     if (fighter.punch(dirHeld()) === "inch") { sfx.chargeStart(); setTimeout(() => { sfx.chargeStop(); fighter.chargeRelease(); }, 520); }
   }
   else if (kind === "bat") fighter.bat();
-  else if (kind === "qb" || kind === "pitch") fighter.trick(kind);
+  else if (kind === "pitch") fighter.trick(kind);
   else fighter.action(kind);
   paintButtons();
 }
@@ -686,14 +686,14 @@ for (const b of document.querySelectorAll(".ctl button[data-k]")) {
   b.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 // 컴퓨터에서 확인할 때 쓰는 키
-const KEYS = { ArrowLeft: "L", ArrowRight: "R", ArrowUp: "U", ArrowDown: "D", Space: "kick", KeyF: "punch", KeyU: "pushup", KeyJ: "rope", KeyD: "dance", KeyB: "bat", KeyG: "guitar", KeyQ: "qb", KeyT: "pitch" };
+const KEYS = { ArrowLeft: "L", ArrowRight: "R", ArrowUp: "U", ArrowDown: "D", Space: "kick", KeyF: "punch", KeyU: "pushup", KeyJ: "rope", KeyD: "dance", KeyB: "bat", KeyT: "pitch" };
 window.addEventListener("keydown", (e) => {
   if (e.repeat || !KEYS[e.code]) return;
   e.preventDefault(); press(KEYS[e.code]);
 });
 window.addEventListener("keyup", (e) => { if (KEYS[e.code]) release(KEYS[e.code]); });
 
-const toggles = ["rope", "dance", "guitar"].map((k) => [k, document.querySelector(`[data-k="${k}"]`)]);
+const toggles = ["rope", "dance"].map((k) => [k, document.querySelector(`[data-k="${k}"]`)]);
 function paintButtons() {
   if (!fighter) return;
   for (const [k, b] of toggles) if (b) b.setAttribute("aria-pressed", fighter.mode === k ? "true" : "false");

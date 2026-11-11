@@ -61,18 +61,15 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 .ctl button{height:48px;border:1px solid rgba(244,239,228,.28);border-radius:24px;background:rgba(0,0,0,.28);color:var(--ink);font-family:var(--brush);font-size:23px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);touch-action:none;transition:background .15s ease,transform .15s ease}
 #pad button{width:46px;height:46px;border-radius:50%}
 .ctl button svg{width:24px;height:24px}
-/* 오른쪽 아래: 주먹·발차기를 게임패드처럼 비스듬히, 그 위에 나머지 동작 버튼을 늘어놓음 */
-#acts{right:calc(env(safe-area-inset-right,0px) + 16px);width:150px;height:150px;display:block}
-#acts .big{position:absolute;inset:0;pointer-events:none} /* 감싸는 상자는 위쪽 버튼 줄의 누름을 가로채지 않게 함 */
-#acts .big button{pointer-events:auto}
-#acts .big button{position:absolute;border-radius:50%}
-#acts [data-k="kick"]{right:0;bottom:0;width:70px;height:70px}
-#acts [data-k="punch"]{right:78px;bottom:26px;width:60px;height:60px}
-#acts [data-k="kick"] svg{width:32px;height:32px}
-#acts [data-k="punch"] svg{width:28px;height:28px}
-.tray{position:absolute;right:0;bottom:84px;display:grid;grid-template-columns:repeat(4,42px);gap:8px;direction:rtl}
-.tray button{width:42px;height:42px;border-radius:50%;direction:ltr}
-.tray svg{width:20px;height:20px}
+/* 오른쪽 아래: 동작 버튼 두 줄. 자주 쓰는 주먹·발차기는 크게, 엄지가 닿는 아래 오른쪽에 */
+#acts{right:calc(env(safe-area-inset-right,0px) + 16px);display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#acts .arow{display:flex;align-items:center;gap:10px}
+#acts .arow button{width:46px;height:46px;border-radius:50%}
+#acts .arow svg{width:21px;height:21px}
+#acts .arow [data-k="punch"]{width:58px;height:58px}
+#acts .arow [data-k="kick"]{width:66px;height:66px}
+#acts .arow [data-k="punch"] svg{width:27px;height:27px}
+#acts .arow [data-k="kick"] svg{width:31px;height:31px}
 .ctl button.down{background:rgba(244,239,228,.22);transform:scale(.94)}
 .ctl button[aria-pressed="true"]{background:rgba(244,239,228,.2);border-color:rgba(244,239,228,.6)}
 .ctl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -126,16 +123,14 @@ body.calm #hud,body.calm #quote{opacity:.18!important;transition:opacity 2.4s ea
   <button type="button" data-k="D" class="d" aria-label="아래. 누르고 있으면 웅크림"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button>
 </div>
 <div id="acts" class="ctl" role="group" aria-label="동작">
-  <div id="tray" class="tray" role="group" aria-label="기술">
+  <div class="arow">
     <button type="button" data-k="pushup" aria-label="팔굽혀펴기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="19" cy="9" r="1.8"/><path d="M17 10.5L5 14.5"/><path d="M14 11.5v5M8 13.5v3"/><path d="M5 14.5l-2 1.5"/><path d="M2 19h20"/></svg></button>
     <button type="button" data-k="rope" aria-label="줄넘기" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="6" r="1.8"/><path d="M12 8.5v6M12 14.5l-2 4.5M12 14.5l2 4.5M12 10.5l-4 2M12 10.5l4 2"/><path d="M8 12.5C4 13 2 17 4 20.5c2 1.5 14 1.5 16 0 2-3.5 0-7.5-4-8"/></svg></button>
     <button type="button" data-k="dance" aria-label="힙합 춤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M12.5 7l-1 6 3 3-1 4.5"/><path d="M11.5 13l-3.5 2-1.5 4"/><path d="M12.3 8.5l4.2-2.5 2 1.5M12 9.5L8 8 6 5"/></svg></button>
     <button type="button" data-k="bat" aria-label="야구 타격"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="6" r="2.2"/><path d="M4 20l9-9"/><path d="M13 11l2.5-2.5"/><path d="M3 19.5l1.5 1.5"/></svg></button>
-    <button type="button" data-k="guitar" aria-label="기타 연주" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 10l6-6M18 3l3 3"/><path d="M13.5 10.5a3 3 0 0 0-4.2-.3L5 14a3.5 3.5 0 0 0 5 5l3.8-4.3a3 3 0 0 0-.3-4.2z"/><circle cx="9.5" cy="14.5" r="1.2"/></svg></button>
-    <button type="button" data-k="qb" aria-label="쿼터백 패스"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="8" ry="5" transform="rotate(-35 12 12)"/><path d="M10 11l4 2M11 9.5l1 .5M12 13l1 .5M13 11.5l1 .5"/></svg></button>
-    <button type="button" data-k="pitch" aria-label="야구 투구"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M8 6.5c1.5 3 1.5 8 0 11M16 6.5c-1.5 3-1.5 8 0 11"/></svg></button>
   </div>
-  <div class="row big">
+  <div class="arow">
+    <button type="button" data-k="pitch" aria-label="야구 투구"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M8 6.5c1.5 3 1.5 8 0 11M16 6.5c-1.5 3-1.5 8 0 11"/></svg></button>
     <button type="button" data-k="punch" aria-label="주먹. 오른쪽과 함께 8연타, 왼쪽과 함께 팔꿈치"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10.5h6.5a2 2 0 0 1 2 2V15a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M5 13h8.5M5 15.5h8.5"/><path d="M17 8.5l2.5-2M17.5 12.5H21M17 16.5l2.5 2"/></svg></button>
     <button type="button" data-k="kick" aria-label="발차기. 오른쪽과 함께 날아 옆차기, 왼쪽과 함께 뒤돌려차기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><path d="M7 8l2 5"/><path d="M9 13l-3 7"/><path d="M9 13l11-2"/><path d="M8 9.5l-4 2M8 9.5l4-1"/></svg></button>
   </div>
@@ -168,12 +163,12 @@ body.calm #hud,body.calm #quote{opacity:.18!important;transition:opacity 2.4s ea
 <script type="importmap">{"imports":{
   "three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
   "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
-  "./js/data.js":"./js/data.js?v=27",
-  "./js/fighter.js":"./js/fighter.js?v=27",
-  "./js/sfx.js":"./js/sfx.js?v=27",
-  "./js/walkman.js":"./js/walkman.js?v=27",
-  "./js/backplate.js":"./js/backplate.js?v=27"
+  "./js/data.js":"./js/data.js?v=28",
+  "./js/fighter.js":"./js/fighter.js?v=28",
+  "./js/sfx.js":"./js/sfx.js?v=28",
+  "./js/walkman.js":"./js/walkman.js?v=28",
+  "./js/backplate.js":"./js/backplate.js?v=28"
 }}</script>
-<script type="module" src="js/main.js?v=27"></script>
+<script type="module" src="js/main.js?v=28"></script>
 </body>
 </html>
