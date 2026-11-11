@@ -81,6 +81,8 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 body.calm #veil{opacity:1;transition:opacity 2.4s ease}
 body.calm #hud,body.calm #quote{opacity:.18!important;transition:opacity 2.4s ease}
 #hud{transition:opacity 1.2s ease}
+/* 시작하고 흐른 시간: 하루가 잘 넘어가는지 확인용 */
+#hud .t{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;letter-spacing:.06em;opacity:.6;margin-top:2px;font-variant-numeric:tabular-nums;text-shadow:0 0 8px var(--ink-shadow)}
 /* 워크맨: 왼쪽 위. 켜지면 테이프가 돌고 곡 제목이 보임 */
 #walkman{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 14px);display:flex;align-items:center;gap:8px;padding:0;border:0;background:none;color:var(--ink);cursor:pointer;font-family:var(--brush);font-size:18px;z-index:5;opacity:.85}
 #walkman svg{width:56px;height:38px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
@@ -111,7 +113,7 @@ body.calm #hud,body.calm #quote{opacity:.18!important;transition:opacity 2.4s ea
 <canvas id="c"></canvas>
 <div id="vignette"></div>
 <div id="grain"></div>
-<div id="hud" aria-live="polite"><b id="dayN">1</b><span class="u">일째</span><span class="m" id="dayM">/ 108</span></div>
+<div id="hud" aria-live="polite"><b id="dayN">1</b><span class="u">일째</span><span class="m" id="dayM">/ 108</span><div class="t" id="elapsed" aria-label="시작하고 흐른 시간"></div></div>
 <button id="snd" type="button" aria-label="소리 끄기"></button>
 <button id="walkman" class="ctl-top" type="button" aria-label="워크맨. 누르면 음악 재생, 길게 누르면 다음 곡" aria-pressed="false"></button>
 <div id="quote" aria-live="polite"></div>

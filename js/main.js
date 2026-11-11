@@ -728,6 +728,18 @@ function begin() {
 intro.addEventListener("click", begin);
 intro.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); begin(); } });
 
+/* ---------- 시작하고 흐른 시간 ---------- */
+// "4일 16:47:15"처럼 처음 연 뒤로 쌓인 시간. #d=N으로 날짜를 흉내 낼 때는 그날에 맞춰 보여줌
+const elapsedEl = document.getElementById("elapsed");
+const pad2 = (n) => String(n).padStart(2, "0");
+function paintElapsed() {
+  let ms = Date.now() - S.start;
+  if (SIM_DAY) ms = (SIM_DAY - 1) * DAY_MS + (ms % DAY_MS);
+  const sec = Math.floor(ms / 1000), d = Math.floor(sec / 86400);
+  elapsedEl.textContent = `${d}일 ${pad2(Math.floor(sec / 3600) % 24)}:${pad2(Math.floor(sec / 60) % 60)}:${pad2(sec % 60)}`;
+}
+paintElapsed(); setInterval(paintElapsed, 1000);
+
 /* ---------- 필름 그레인 ---------- */
 (function grain() {
   const c = document.createElement("canvas"); c.width = c.height = 160; const g = c.getContext("2d"); const d = g.createImageData(160, 160);
