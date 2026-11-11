@@ -174,7 +174,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
     bat: { ends: "hands", approach: true, power: 2.2, swing: true, extend: 0.8 }, // 빈손 야구 타격. 보이지 않는 방망이 끝(0.8m)이 맞음
   };
   /** 치지 않는 재주: 한 번 하고 서 있는 자세로 돌아옴 */
-  const TRICKS = { jump: act("jump", true), qb: act("qb", true), pitch: act("pitch", true), freeze: act("breakdance", true) };
+  const TRICKS = { jump: act("jump", true), qb: act("qb", true), pitch: act("pitch", true) };
   const crouch = act("crouch");
   for (const [name, sk] of Object.entries(STRIKES)) {
     sk.action = act(name, true);
@@ -244,8 +244,8 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
 
   /** 팔굽혀펴기(누를 때마다 한 번)와 줄넘기(누르면 시작, 다시 누르면 멈춤) */
   const pushup = act("pushup", true), rope = act("rope"), guitar = act("guitar");
-  // 힙합 춤: 누를 때마다 넷 중 하나를 골라 춤
-  const dances = list.filter((c) => c.name.startsWith("dance_")).map((c) => act(c.name));
+  // 춤: 누를 때마다 힙합 춤과 브레이크댄스 프리즈 중 하나를 골라 춤
+  const dances = list.filter((c) => c.name.startsWith("dance_") || c.name === "breakdance").map((c) => act(c.name));
   // 줄넘기: 엉덩이가 가장 높은 순간(줄이 발밑을 지나는 때)을 찾아 줄을 돌리는 박자로 씀
   const ropePeaks = [];
   if (rope) {
@@ -344,7 +344,7 @@ async function makeMixamo(scene, { onLand, onPunch, onHit, onWhoosh }) {
     },
     /** 빈손으로 야구 방망이를 휘두름 */
     bat() { return free() && startStrike("bat"); },
-    /** jump(점프), qb(쿼터백 패스), pitch(야구 투구), freeze(브레이크댄스 한 손 물구나무) */
+    /** jump(점프), qb(쿼터백 패스), pitch(야구 투구) */
     trick(name) {
       const x = TRICKS[name]; if (!x || !free()) return false;
       mode = "trick"; go(x, 0.15); return true;
