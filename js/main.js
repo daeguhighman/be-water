@@ -715,9 +715,15 @@ const walkman = makeWalkman(document.getElementById("walkman"));
 // 누르는 순간 소리를 켜야 아이폰에서도 소리가 나서, 시작을 이 화면 한 번의 탭으로 함
 const intro = document.getElementById("intro");
 document.getElementById("introDay").textContent = dayNow() + "일째";
-let started = false;
+// 맨 처음 한 번만 보여 줌. 그 뒤로는 바로 게임으로 들어가고, 첫 터치 때 소리를 켬
+let started = !!S.introDone;
+if (started) {
+  intro.style.transition = "none"; intro.classList.add("off");
+  window.addEventListener("pointerdown", () => sfx.init(), { once: true, capture: true });
+}
 function begin() {
   if (started) return; started = true;
+  S.introDone = true; save();
   sfx.init(); sfx.cassette();
   intro.classList.add("in");
   const music = walkman.play();                     // 노래가 있으면 바로 재생

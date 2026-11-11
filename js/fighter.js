@@ -29,7 +29,8 @@ export async function makeFighter(scene, { onLand, onPunch, onHit, onWhoosh }) {
 //       armada, martelo, jump, crouch, bat, uppercut, body, guitar, qb, pitch, breakdance
 async function loadCharacter() {
   try {
-    const gltf = await new GLTFLoader().loadAsync("assets/fighter.glb");
+    // 이 파일을 부른 주소의 ?v=를 그대로 붙여, 새로 올렸을 때 예전 캐릭터 파일을 쓰지 않게 함
+    const gltf = await new GLTFLoader().loadAsync("assets/fighter.glb" + new URL(import.meta.url).search);
     gltf.scene.scale.setScalar(0.01); // Mixamo는 센티미터 단위
     return { base: gltf.scene, clips: gltf.animations };
   } catch (e) {
